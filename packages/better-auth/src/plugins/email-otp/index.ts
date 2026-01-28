@@ -10,6 +10,7 @@ import {
 	createVerificationOTP,
 	forgetPasswordEmailOTP,
 	getVerificationOTP,
+	requestPasswordResetEmailOTP,
 	resetPasswordEmailOTP,
 	sendVerificationOTP,
 	signInEmailOTP,
@@ -18,7 +19,6 @@ import {
 import type { EmailOTPOptions } from "./types";
 
 declare module "@better-auth/core" {
-	// biome-ignore lint/correctness/noUnusedVariables: AuthOptions and Options need to be same as declared in the module
 	interface BetterAuthPluginRegistry<AuthOptions, Options> {
 		"email-otp": {
 			creator: typeof emailOTP;
@@ -75,6 +75,7 @@ export const emailOTP = (options: EmailOTPOptions) => {
 			checkVerificationOTP: checkVerificationOTP(opts),
 			verifyEmailOTP: verifyEmailOTP(opts),
 			signInEmailOTP: signInEmailOTP(opts),
+			requestPasswordResetEmailOTP: requestPasswordResetEmailOTP(opts),
 			forgetPasswordEmailOTP: forgetPasswordEmailOTP(opts),
 			resetPasswordEmailOTP: resetPasswordEmailOTP(opts),
 		},
