@@ -9,8 +9,6 @@ import {
 	cancelSubscription,
 	cancelSubscriptionCallback,
 	createBillingPortal,
-	getSubscriptionUsage,
-	ingestSubscriptionUsage,
 	listActiveSubscriptions,
 	restoreSubscription,
 	stripeWebhook,
@@ -19,11 +17,9 @@ import {
 } from "./routes";
 import { getSchema } from "./schema";
 import type {
-	MeterConfig,
 	StripeOptions,
 	StripePlan,
 	Subscription,
-	SubscriptionOptions,
 	WithStripeCustomerId,
 } from "./types";
 import { escapeStripeSearchValue, getPlans, isActiveOrTrialing } from "./utils";
@@ -49,11 +45,6 @@ export const stripe = <O extends StripeOptions>(options: O) => {
 		createBillingPortal: createBillingPortal(options),
 	};
 
-	const meteringEndpoints = {
-		stripeIngestUsage: ingestSubscriptionUsage(options),
-		stripeGetUsage: getSubscriptionUsage(options),
-	};
-
 	return {
 		id: "stripe",
 		endpoints: {
@@ -64,14 +55,6 @@ export const stripe = <O extends StripeOptions>(options: O) => {
 				enabled: true;
 			}
 				? typeof subscriptionEndpoints
-				: {}),
-			...((options.subscription?.enabled && options.subscription.meters?.length
-				? meteringEndpoints
-				: {}) as O["subscription"] extends {
-				enabled: true;
-				meters: MeterConfig[];
-			}
-				? typeof meteringEndpoints
 				: {}),
 		},
 		init(ctx) {
@@ -456,4 +439,4 @@ export type StripePlugin<O extends StripeOptions> = ReturnType<
 	typeof stripe<O>
 >;
 
-export type { Subscription, SubscriptionOptions, StripePlan };
+export type * from "./types";
