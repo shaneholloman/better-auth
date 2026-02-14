@@ -101,6 +101,7 @@ export async function onCheckoutSessionCompleted(
 							? new Date(subscription.ended_at * 1000)
 							: null,
 						seats: seats,
+						billingInterval: subscriptionItem.price.recurring?.interval,
 					},
 					where: [
 						{
@@ -242,6 +243,7 @@ export async function onSubscriptionCreated(
 				periodStart,
 				periodEnd,
 				seats,
+				billingInterval: subscriptionItem.price.recurring?.interval,
 			},
 		});
 
@@ -322,9 +324,18 @@ export async function onSubscriptionUpdated(
 				)
 			: subscriptionItem.quantity;
 
+		const trial =
+			subscriptionUpdated.trial_start && subscriptionUpdated.trial_end
+				? {
+						trialStart: new Date(subscriptionUpdated.trial_start * 1000),
+						trialEnd: new Date(subscriptionUpdated.trial_end * 1000),
+					}
+				: {};
+
 		const updatedSubscription = await ctx.context.adapter.update<Subscription>({
 			model: "subscription",
 			update: {
+				...trial,
 				...(plan
 					? {
 							plan: plan.name.toLowerCase(),
@@ -347,6 +358,7 @@ export async function onSubscriptionUpdated(
 					: null,
 				seats,
 				stripeSubscriptionId: subscriptionUpdated.id,
+				billingInterval: subscriptionItem.price.recurring?.interval,
 			},
 			where: [
 				{
@@ -414,6 +426,13 @@ export async function onSubscriptionDeleted(
 			],
 		});
 		if (subscription) {
+			const trial =
+				subscriptionDeleted.trial_start && subscriptionDeleted.trial_end
+					? {
+							trialStart: new Date(subscriptionDeleted.trial_start * 1000),
+							trialEnd: new Date(subscriptionDeleted.trial_end * 1000),
+						}
+					: {};
 			await ctx.context.adapter.update({
 				model: "subscription",
 				where: [
@@ -423,6 +442,7 @@ export async function onSubscriptionDeleted(
 					},
 				],
 				update: {
+					...trial,
 					status: "canceled",
 					updatedAt: new Date(),
 					cancelAtPeriodEnd: subscriptionDeleted.cancel_at_period_end,
